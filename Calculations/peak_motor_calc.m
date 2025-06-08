@@ -7,11 +7,12 @@ m_trail  = 1800;        % kg
 Crr      = 0.004;       % rolling resistance
 g        = 9.81;        % m/s^2
 grade    = 0.02;        % 2% incline
-G        = 5;           % gearbox ratio
+G        = 8;           % gearbox ratio
 eta_mech = 0.90;        % mech efficiency
 eta_elec = 0.85;        % elec efficiency
 n_mot    = 2;           % number of motors
-a=0.5;
+a=1;
+%adicionar tempo
 
 %% 1) Total mass
 m_total = m_loco + m_trail;

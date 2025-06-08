@@ -1,4 +1,4 @@
-function [max_motor_torque,max_motor_speed,max_motor_power] = MotorParameters(f_wheel,wheel_radius,transmission_eff,G,adhesion_coeff,max_velocity)
+function [motor_torque,max_motor_speed,max_motor_power] = MotorParameters(f_wheel,wheel_radius,transmission_eff,G,adhesion_coeff,max_velocity)
 
 %{
 This function outputs the following:
@@ -11,14 +11,13 @@ This function outputs the following:
 
 
 %Calculating the  values
-torque1=(f_wheel*wheel_radius)/5;
-torque2=2*torque1;
-torque3=torque2/(transmission_eff*G);
-max_motor_torque= torque3;
 
-max_motor_speed=max_velocity*60*G/(pi*wheel_radius*2); %in rpm's
+motor_torque=2*(f_wheel.*wheel_radius)./0.5./(transmission_eff.*G);
 
-max_motor_power=(max_motor_speed)*max_motor_torque*((2*pi)/60);
+
+max_motor_speed=max_velocity.*60.*G./(pi*wheel_radius*2); %in rpm's
+
+max_motor_power=(max_motor_speed).*motor_torque*((2*pi)/60);
 
 %Printing the maximum values
 
@@ -29,7 +28,7 @@ max_motor_power=(max_motor_speed)*max_motor_torque*((2*pi)/60);
 figure;
 
 subplot(2,2,1);
-plot(adhesion_coeff, max_motor_torque);
+plot(adhesion_coeff, motor_torque);
 title('Motor Torque vs adhesion coefficient');
 
 subplot(2,2,2);

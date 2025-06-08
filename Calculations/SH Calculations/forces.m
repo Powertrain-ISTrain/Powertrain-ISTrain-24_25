@@ -11,6 +11,10 @@ This function outputs the following:
 * plot of traction for all coefficents
 %}
 
+
+%----------------------------------------------------------
+
+
 alpha = atan(max_gradient / 100); % gradient angle in radians
 
 % Calculating the maximum values
