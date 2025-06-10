@@ -1,0 +1,22 @@
+project_part1_sfun.obj
+c3_project_part1.obj
+project_part1_sfun_registry.obj
+
+
+
+"D:\Programas\Matlab2017b\extern\lib\win64\mingw64\sf_runtime.lib" 
+"D:\Programas\Matlab2017b\extern\lib\win64\mingw64\libmx.lib" 
+"D:\Programas\Matlab2017b\extern\lib\win64\mingw64\libmex.lib" 
+"D:\Programas\Matlab2017b\extern\lib\win64\mingw64\libmat.lib" 
+"D:\Programas\Matlab2017b\extern\lib\win64\mingw64\libfixedpoint.lib" 
+"D:\Programas\Matlab2017b\extern\lib\win64\mingw64\libut.lib" 
+"D:\Programas\Matlab2017b\extern\lib\win64\mingw64\libmwmathutil.lib" 
+"D:\Programas\Matlab2017b\extern\lib\win64\mingw64\libemlrt.lib" 
+"D:\Programas\Matlab2017b\extern\lib\win64\mingw64\libmwsl_log_load_blocks.lib" 
+"D:\Programas\Matlab2017b\extern\lib\win64\mingw64\libmwsimulink.lib" 
+"D:\Programas\Matlab2017b\extern\lib\win64\mingw64\libmwsl_sfcn_cov_bridge.lib" 
+"D:\Programas\Matlab2017b\extern\lib\win64\mingw64\libcovrt.lib" 
+"D:\Programas\Matlab2017b\extern\lib\win64\mingw64\libmwsl_simtarget_core.lib" 
+"D:\Programas\Matlab2017b\extern\lib\win64\mingw64\libmwsl_simtarget_instrumentation.lib" 
+"-LD:\Programas\Matlab2017b\bin\win64" "-llibmwipp"
+
