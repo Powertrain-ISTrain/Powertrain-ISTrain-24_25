@@ -2,16 +2,16 @@
 % Given parameters
 v_max    = 4.17;        % m/s
 r_w      = 0.100;       % m
-m_loco   = 450;         % kg
+m_loco   = 350;         % kg
 m_trail  = 1800;        % kg
 Crr      = 0.004;       % rolling resistance
 g        = 9.81;        % m/s^2
 grade    = 0.02;        % 2% incline
-G        = 8;           % gearbox ratio
-eta_mech = 0.90;        % mech efficiency
-eta_elec = 0.85;        % elec efficiency
+G        = 5;           % gearbox ratio
+eta_mech = 0.85;        % mech efficiency
+eta_elec = 0.90;        % elec efficiency
 n_mot    = 2;           % number of motors
-a=1;
+a=0.35;
 %adicionar tempo
 
 %% 1) Total mass
@@ -28,7 +28,7 @@ T_wheel = F_req * r_w;
 
 %% 4) Motor torque (per motor) for start
 T_motor = (T_wheel / n_mot) / (G * eta_mech);
-T_motor = 1.15 * T_motor;       % +15% margin
+%T_motor = 1.15 * T_motor;       % +15% margin
 
 %% 5) Motor speed at v_max
 omega_wheel = v_max / r_w;           
@@ -37,7 +37,7 @@ rpm_motor   = omega_motor * 60/(2*pi);
 
 %% 6) Mechanical power at wheels & apply safety margin
 P_mech_wheel = F_req * v_max;        % P = F * v
-P_mech_wheel = 1.15 * P_mech_wheel;  % +15% margin
+%P_mech_wheel = 1.15 * P_mech_wheel;  % +15% margin
 
 %% 7) Mechanical power at motor shaft (total & per‑motor)
 P_mech_motor_total = P_mech_wheel / eta_mech;
