@@ -3,13 +3,31 @@ clear;
 
 %% Simulation Parameters
 dt = 1;                        % Time step [s]
-t_end = 100*60;                % Total simulation time [s] (180 min)
+t_end = 100*60;                % Total simulation time [s] (100 min)
 t = 0:dt:t_end;
 
 %% Power Profile (includes a peak at t = 600 s)
-base_power = 540.7;            % Base power in Watts
-peak_power = 1000000;%3689;             % Peak power in Watts
-power_profile = base_power + (peak_power - base_power) * exp(-0.5 * ((t - 600)/30).^2);
+base_power = 540.7;     % Base power in Watts
+
+% Define peak times (in seconds) and corresponding peak values (in Watts)
+t_peaks = [100, 250, 400, 550, 700, 850, 1000, 1150, 1300, ...
+           1450, 1600, 1750, 1900, 2050, 2200, 2350, 2500, ...
+           2650, 2800, 2950, 3100, 3250, 3400, 3550, 3700, 3850, 4000, 4150];
+
+peak_values = [2000, 3000, 5000, 3500, 6900, 2500, 4500, 3000, 5500, ...
+               2000, 4000, 3000, 6500, 2500, 5000, 6000, 3500, ...
+               2500, 5800, 4200, 3900, 6100, 3000, 4300, 4700, 3500, 4000, 6900];
+
+sigma = 50;  % Width of each peak in seconds
+
+% Start with base power profile
+power_profile = base_power * ones(size(t));
+
+% Superimpose each Gaussian peak
+for i = 1:length(t_peaks)
+    power_profile = power_profile + ...
+        (peak_values(i) - base_power) * exp(-0.5 * ((t - t_peaks(i))/sigma).^2);
+end
 
 %% Cell Parameters (21700 Li-ion)
 cell_voltage_nom = 3.6;        % Nominal voltage [V]
@@ -26,9 +44,30 @@ pack_voltage_nom = cell_voltage_nom * num_series;
 pack_capacity_Ah = cell_capacity_Ah * num_parallel;
 Q_total = pack_capacity_Ah * 3600;  % Total charge [Coulombs]
 
+% --- Print Battery Pack Specifications ---
+fprintf('\n==== BATTERY PACK SPECIFICATIONS ====\n');
+fprintf('Battery chemistry     : 21700 Li-ion\n');
+fprintf('Cell nominal voltage  : %.1f V\n', cell_voltage_nom);
+fprintf('Cell capacity         : %.1f Ah\n', cell_capacity_Ah);
+fprintf('Cells in series       : %d\n', num_series);
+fprintf('Cells in parallel     : %d\n', num_parallel);
+fprintf('Pack nominal voltage  : %.1f V\n', pack_voltage_nom);
+fprintf('Pack total capacity   : %.0f Ah\n', pack_capacity_Ah);
+fprintf('Pack energy (nominal) : %.0f Wh\n', pack_capacity_Ah * pack_voltage_nom);
+fprintf('Total charge capacity : %.0f Coulombs\n', Q_total);
+
+% --- Print Electrical Model Parameters ---
+fprintf('\n---- ELECTRICAL MODEL PARAMETERS ----\n');
+fprintf('Internal resistance R0: %.4f Ohm\n', R0);
+fprintf('RC resistance R1      : %.4f Ohm\n', R1);
+fprintf('RC capacitance C1     : %.0f F\n', C1);
+fprintf('Voltage cutoff (min)  : %.1f V\n', 50);  % from voc_min
+fprintf('Minimum SoC allowed   : %.0f %%\n', 10); % from soc_min
+fprintf('=====================================\n\n');
+
 %% Safety Limits
 soc_min = 0.10;                % Minimum SoC threshold (10%)
-voc_min = 50;                    % Minimum terminal voltage [V]
+voc_min = 50;                  % Minimum terminal voltage [V]
 
 %% Preallocate Variables
 soc = ones(size(t));           % State of Charge (initial = 100%)

@@ -29,4 +29,4 @@ C_rate  = 4.76;
 m_total = m_loco + m_trail;
 
 StepSize = 0.001;
-StopTime = 400;
+StopTime = 70*60;
