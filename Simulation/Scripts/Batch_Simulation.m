@@ -1,12 +1,9 @@
 
-
-
 driveCycles = DriveCycles();
 for k = 1:numel(driveCycles)
   currentCycle = timeseries(driveCycles(k).speed, driveCycles(k).time);
   % …set up simIn, run sim, extract metrics…
 end
-
 
 %% Batch‑Simulation Script for Drive‑Cycle Scenarios
 
