@@ -3,20 +3,16 @@ clear;
 
 %% Time Parameters
 dt = 1;                        % Time step [s]
-t_end = 70*60;                % Total simulation time [s] (60 min)
+t_end = 180*60;                % Total simulation time [s] (60 min)
 t = 0:dt:t_end;
 
 %% Power Profile
-base_power = 540.7;     % Base power in Watts
+base_power = 540.7 + 0.1*540.7;     % Base power in Watts
 
-% Define peak times (in seconds) and corresponding peak values (in Watts)
-t_peaks = [100, 250, 400, 550, 700, 850, 1000, 1150, 1300, ...
-           1450, 1600, 1750, 1900, 2050, 2200, 2350, 2500, ...
-           2650, 2800, 2950, 3100, 3250, 3400, 3550, 3700, 3850, 4000, 4150];
+% Reduced number of peak events over 3 hours (12 peaks)
+t_peaks = [450, 900, 1350, 1800, 2250, 2700, 3150, 3600, 4050, 4500, 4950, 5400, 9000]; % in seconds
 
-peak_values = [2000, 3000, 5000, 3500, 6900, 2500, 4500, 3000, 5500, ...
-               2000, 4000, 3000, 6500, 2500, 5000, 6000, 3500, ...
-               2500, 5800, 4200, 3900, 6100, 3000, 4300, 4700, 3500, 4000, 6900];
+peak_values = [1000, 1500, 6861+0.01*6861, 3000, 4000, 6000, 6861+0.01*6861, 2500, 3000, 5000, 3500, 2000,2000]; % in Watts
 
 sigma = 50;  % Width of each peak in seconds
 
@@ -33,11 +29,12 @@ end
 %% Battery Pack Configuration (LiFePO4)
 cell_voltage = 24;             % Each battery
 cell_capacity = 100;           % Ah
+usable_capacity_Ah = 0.8 * cell_capacity;  % 80% DoD
 num_series = 2;                % 2 in series => 48 V
 num_parallel = 2;              % 2 branches in parallel => 200 Ah
 
 pack_voltage_nom = cell_voltage * num_series;           % 48 V
-pack_capacity_Ah = cell_capacity * num_parallel;        % 200 Ah
+pack_capacity_Ah = usable_capacity_Ah * num_parallel;
 Q_total = pack_capacity_Ah * 3600;                      % [Coulombs]
 
 % --- Print Battery Pack Specifications ---
@@ -65,6 +62,19 @@ fprintf('RC resistance R1      : %.4f Ohm\n', R1);
 fprintf('RC capacitance C1     : %.0f F\n', C1);
 fprintf('Voltage cutoff (min)  : %.1f V\n', voc_min);
 fprintf('=====================================\n\n');
+
+%% Energy Density and Mass Estimation
+energy_density_Wh_per_kg = 102.4;  % [Wh/kg]
+
+pack_energy_Wh = pack_capacity_Ah * pack_voltage_nom;  % Total energy [Wh]
+battery_mass_kg = pack_energy_Wh / energy_density_Wh_per_kg;
+
+% Print result
+fprintf('\n==== MASS ESTIMATION ====\n');
+fprintf('Total energy stored    : %.1f Wh\n', pack_energy_Wh);
+fprintf('Energy density         : %.1f Wh/kg\n', energy_density_Wh_per_kg);
+fprintf('Estimated battery mass : %.1f kg\n', battery_mass_kg);
+fprintf('==========================\n\n');
 
 %% Preallocate
 soc = ones(size(t));
