@@ -41,10 +41,7 @@ time_15kmh=max_velocity./max_accel_loaded;
 %% Torque and Power Calculation
 
 motor_torque=2*(f_wheel.*wheel_radius)./0.5./(transmission_eff.*G);
-
-
 max_motor_speed=max_velocity.*60.*G./(pi*wheel_radius*2); %in rpm's
-
 max_motor_power=(max_motor_speed).*motor_torque*((2*pi)/60);
 
 
