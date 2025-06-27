@@ -2,7 +2,7 @@
 % Given parameters
 v_max    = 4.17;        % m/s
 r_w      = 0.100;       % m
-m_loco   = 350;         % kg
+m_loco   = 600;         % kg
 m_trail  = 1800;        % kg
 Crr      = 0.004;       % rolling resistance
 g        = 9.81;        % m/s^2
@@ -12,7 +12,7 @@ eta_mech = 0.85;        % mech efficiency
 eta_elec = 0.90;        % elec efficiency
 n_mot    = 2;           % number of motors
 a=0.35;
-%adicionar tempo
+
 
 %% 1) Total mass
 m_total = m_loco + m_trail;

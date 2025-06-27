@@ -1,6 +1,6 @@
 %% B. Continuous Cruise & Energy Sizing (split efficiencies)
 % Given parameters (re‑use or re‑define as needed)
-m_loco         = 700;            % kg
+m_loco         = 600;            % kg
 m_cruise_trail = 400;            % kg
 Crr            = 0.004;
 g              = 9.81;
