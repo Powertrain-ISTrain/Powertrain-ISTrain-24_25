@@ -1,48 +1,52 @@
 clc;
 clear;
 
+%% ================================================================
+% ECO-WORTHY LiFePO4 Battery Technical Specifications and Features
+% ================================================================
+%
+% Características principais:
+% - Ideal para sistemas solares 24V off-grid e instalações em interiores ou exteriores
+% - Células LiFePO4 de grau A com mais de 4000 ciclos de vida útil
+% - Mantém até 80% da capacidade após 4000 ciclos profundos
+% - BMS integrado com proteção contra sobrecarga, descarga, curto-circuito, sobrecorrente e alta temperatura
+% - Suporta ligação em paralelo para aumento de capacidade
+% - Recarga rápida: até 80% em 3 a 4 horas
+% - Peso reduzido (1/3 do peso de baterias de chumbo-ácido) para facilitar transporte e instalação
+% - Compatível com autocaravanas, embarcações, carrinhos de golfe, sistemas solares e alimentação de emergência
+%
+% Especificações técnicas:
+% - Capacidade da bateria:          100 Ah
+% - Energia total:                  2560 Wh
+% - Tensão nominal:                 25.6 V
+% - Tensão máxima de carga:         29.2 V
+% - Corrente máx. de carga:         100 A ±5 A
+% - Corrente máx. de descarga:      100 A ±5 A
+% - Temperatura de funcionamento:   -20 a 55 °C
+% - Ciclos de carga:                >4000 ciclos (a 80% capacidade residual)
+% - Sistema de gestão:              BMS integrado com autoequilíbrio de células
+% - Tipo de rosca dos terminais:    M8
+% - Dimensões:                      36.5 × 18.8 × 27.2 cm
+% - Peso:                           20.3 kg
+%
+% ================================================================
+
 %% Time Parameters
 dt = 1;                        % Time step [s]
-t_end = 180*60;                % Total simulation time [s] (60 min)
+t_end = 3 * 3600;              % Total simulation time: 3 hours [s]
 t = 0:dt:t_end;
 
-%% Power Profile
-base_power = 540.7 + 0.1*540.7;     % Base power in Watts
-
-% Reduced number of peak events over 3 hours (12 peaks)
-t_peaks = [450, 900, 1350, 1800, 2250, 2700, 3150, 3600, 4050, 4500, 4950, 5400, 9000]; % in seconds
-
-% Original peak values
-peak_values_orig = [1000, 1500, 6861+0.01*6861, 3000, 4000, 6000, 6861+0.01*6861, 2500, 3000, 5000, 3500, 2000, 2000];
-
-% Copy to new vector
-peak_values = peak_values_orig;
-
-% Scale down all peaks except indices 3 and 7
-for idx = 1:length(peak_values)
-    if idx ~=3 && idx ~=7
-        peak_values(idx) = peak_values(idx)*0.3;
-    end
-end
-
-sigma = 50;  % Width of each peak in seconds
-
-% Start with base power profile
+%% Power Profile (Constant)
+base_power = 540.7 + 0.1 * 540.7;   % Base power in Watts
 power_profile = base_power * ones(size(t));
-
-% Superimpose each Gaussian peak
-for i = 1:length(t_peaks)
-    power_profile = power_profile + ...
-        (peak_values(i) - base_power) * exp(-0.5 * ((t - t_peaks(i))/sigma).^2);
-end
 
 %% Battery Pack Configuration (ECO-Worthy LiFePO4)
 cell_voltage = 25.6;               % Nominal voltage per battery pack [V]
 cell_capacity = 100;               % Ah
 usable_capacity_Ah = cell_capacity * 0.8;  % 80% DoD
 
-num_series = 2;                    % Single pack (25.6 V)
-num_parallel = 2;              % Two packs in parallel
+num_series = 2;                    % 2 in series
+num_parallel = 2;                  % 2 in parallel
 
 pack_voltage_nom = cell_voltage * num_series;          
 pack_capacity_Ah = usable_capacity_Ah * num_parallel;
@@ -62,7 +66,7 @@ fprintf('Total charge capacity : %.0f Coulombs\n', Q_total);
 R0 = 0.015;                   % Internal resistance [Ohm]
 R1 = 0.004;                   % RC branch resistance [Ohm]
 C1 = 1500;                    % Capacitance [F]
-voc_min = 22*(num_series);                 % Cutoff voltage [V]
+voc_min = 22 * num_series;    % Cutoff voltage [V]
 
 % --- Print Electrical Model Parameters ---
 fprintf('\n---- ELECTRICAL MODEL PARAMETERS ----\n');
@@ -74,17 +78,15 @@ fprintf('=====================================\n\n');
 
 %% Energy Density and Mass Estimation
 energy_density_Wh_per_kg = 126;  % [Wh/kg] from datasheet
-
-pack_energy_Wh = 2560;           % From datasheet %Usefull pack_energy
+pack_energy_Wh = 2560;           % Per module
 battery_mass_kg = pack_energy_Wh / energy_density_Wh_per_kg;
 
-% Print result
 fprintf('\n==== MASS ESTIMATION ====\n');
-fprintf('Total energy stored  datasheet  : %.1f Wh\n', pack_energy_Wh);
-fprintf('Energy density         : %.1f Wh/kg\n', energy_density_Wh_per_kg);
-fprintf('Estimated battery mass : %.1f kg\n', battery_mass_kg);
-fprintf('Estimated total battery mass : %.1f kg\n', battery_mass_kg*num_series*num_parallel);
-fprintf('==========================\n\n');
+fprintf('Total energy stored per module   : %.1f Wh\n', pack_energy_Wh);
+fprintf('Energy density                   : %.1f Wh/kg\n', energy_density_Wh_per_kg);
+fprintf('Estimated battery mass (1 module): %.1f kg\n', battery_mass_kg);
+fprintf('Estimated total battery mass     : %.1f kg\n', battery_mass_kg * num_series * num_parallel);
+fprintf('=====================================\n\n');
 
 %% Preallocate
 soc = ones(size(t));
@@ -116,9 +118,9 @@ for k = 2:length(t)
     % Calculate current
     I = power / max(V_oc(k), 1e-3);
     % Enforce maximum discharge current
-    if I/(num_parallel) > 100
-        I = 100;
-        power = I * V_oc(k); % Cap power accordingly
+    if I / num_parallel > 100
+        I = 100 * num_parallel;
+        power = I * V_oc(k);
     end
     dV_RC = (-V_RC(k-1) + I * R1) / (R1 * C1) * dt;
     V_RC(k) = V_RC(k-1) + dV_RC;
@@ -139,7 +141,7 @@ for k = 2:length(t)
     % Save outputs
     current(k) = I;
     voltage(k) = V_terminal;
-    c_rate(k) = current(k) / pack_capacity_Ah;  % [1/h]
+    c_rate(k) = current(k) / pack_capacity_Ah;
 end
 
 %% Plot Results
@@ -176,3 +178,4 @@ power_signal.time = t';
 power_signal.signals.values = power_profile';
 power_signal.signals.dimensions = 1;
 save('power_profile.mat', 'power_signal');
+
