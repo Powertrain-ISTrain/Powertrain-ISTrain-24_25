@@ -1,11 +1,9 @@
 %% run_ISTrain2025.m
-% This script configures and runs the ISTrain2025 Simulink model without
-% using bus objects. Each motor parameter is exposed as its own
-% Simulink.Parameter for easy tuning. Finally it plots drive cycle,
+% This script configures and runs the ISTrain2025 and  it plots the drive cycle,
 % efficiency, torque‐speed map, and battery signals.
 
 clear; close all; clc;
-modelName = 'ISTrain2025';   % <-- your Simulink model filename
+modelName = 'ISTrain2025';   
 
 %% Define fixed vehicle parameters
 m_loco    = 600;      % loco mass [kg]
@@ -21,10 +19,14 @@ assignin('base','StepSize',StepSize);
 
 %% 0) User choices
 mt = 1;    % Motor choice
+bt=1;
 dc = 1;    % Drive‑cycle choice
+
 
 %% 1) Motor parameters as Simulink.Parameter objects
 % BLDC HMP‑3000 example values
+
+
 Kt = Simulink.Parameter(0.115);   Kt.CoderInfo.StorageClass = 'SimulinkGlobal';
 Ke = Simulink.Parameter(0.115);   Ke.CoderInfo.StorageClass = 'SimulinkGlobal';
 R  = Simulink.Parameter(0.06);    R.CoderInfo.StorageClass  = 'SimulinkGlobal';
@@ -132,6 +134,12 @@ tC   = crateTS.time;  yC   = crateTS.signals.values;
 %% 6) Compute & plot efficiency
 P_mech = T_sim .* omega_sim;
 eff    = P_mech ./ P_elec; eff(P_elec<1e-6) = 0;
+%%
+figure;
+plot(time_sim, omega_sim, 'LineWidth',1.5);
+xlabel('Time [s]'); ylabel('speed');
+title('speed'); grid on; 
+%%
 
 figure;
 plot(time_sim, eff, 'LineWidth',1.5);
@@ -147,18 +155,22 @@ title('Torque‑Speed Map'); legend('Static','Trajectory');
 
 %% 8) Plot battery signals
 figure;
-subplot(4,1,1);
+subplot(5,1,1);
 plot(tV,  yV,  'LineWidth',1.2);
 ylabel('Voltage [V]'); title('Battery Voltage'); grid on;
 
-subplot(4,1,2);
+subplot(5,1,2);
 plot(tI,  yI,  'LineWidth',1.2);
 ylabel('Current [A]'); title('Battery Current'); grid on;
 
-subplot(4,1,3);
+subplot(5,1,3);
 plot(tSOC,ySOC,'LineWidth',1.2);
 ylabel('SOC [%]'); title('State of Charge'); grid on;
 
-subplot(4,1,4);
+subplot(5,1,4);
+plot(tC,  yC,  'LineWidth',1.2);
+xlabel('Time [s]'); ylabel('C‑rate'); title('Charge/Discharge C‑rate'); grid on;
+
+subplot(5,1,5);
 plot(tC,  yC,  'LineWidth',1.2);
 xlabel('Time [s]'); ylabel('C‑rate'); title('Charge/Discharge C‑rate'); grid on;
