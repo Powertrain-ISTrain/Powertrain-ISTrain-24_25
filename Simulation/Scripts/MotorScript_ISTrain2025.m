@@ -19,25 +19,59 @@ assignin('base','StepSize',StepSize);
 
 %% 0) User choices
 mt = 1;    % Motor choice
-bt=1;
-dc = 1;    % Drive‑cycle choice
+bt=1;      % Battery choice
+dc = 2;    % Drive‑cycle choice
 
 
 %% 1) Motor parameters as Simulink.Parameter objects
 % BLDC HMP‑3000 example values
 
+switch mt
 
-Kt = Simulink.Parameter(0.115);   Kt.CoderInfo.StorageClass = 'SimulinkGlobal';
-Ke = Simulink.Parameter(0.115);   Ke.CoderInfo.StorageClass = 'SimulinkGlobal';
-R  = Simulink.Parameter(0.06);    R.CoderInfo.StorageClass  = 'SimulinkGlobal';
-kc = Simulink.Parameter(1e-4);    kc.CoderInfo.StorageClass = 'SimulinkGlobal';
-kf = Simulink.Parameter(5e-3);    kf.CoderInfo.StorageClass = 'SimulinkGlobal';
-invEff = Simulink.Parameter(0.95); invEff.CoderInfo.StorageClass = 'SimulinkGlobal';
+    case 1
 
-% Read static torque‑speed map from Excel
-mapData = readmatrix('HMP-3000.xlsx');
-speed_map_rpm = mapData(:,1);
-torque_map_Nm = mapData(:,2);
+    %Description: 
+    %BLDC Motor HMP-3000 /   Nominal Power : 3000 W / Nominal Voltage: 48V / Nominal Current: 80 / Nominal Torque: 9.4 N.m / Nominal
+    %speed 4000 rpm
+
+    %Motor Parameters
+    Kt = Simulink.Parameter(0.115);   Kt.CoderInfo.StorageClass = 'SimulinkGlobal';
+    Ke = Simulink.Parameter(0.115);   Ke.CoderInfo.StorageClass = 'SimulinkGlobal';
+    R  = Simulink.Parameter(0.06);    R.CoderInfo.StorageClass  = 'SimulinkGlobal';
+    kc = Simulink.Parameter(1e-4);    kc.CoderInfo.StorageClass = 'SimulinkGlobal';
+    kf = Simulink.Parameter(5e-3);    kf.CoderInfo.StorageClass = 'SimulinkGlobal';
+    invEff = Simulink.Parameter(0.95); invEff.CoderInfo.StorageClass = 'SimulinkGlobal';
+
+    % Torque Speed Map
+    mapData = readmatrix('HMP-3000.xlsx');
+    speed_map_rpm = mapData(:,1);
+    torque_map_Nm = mapData(:,2);
+
+    case 2
+
+    %Description: 
+    %BLDC_108 /   Nominal Power : 1.5 W / Nominal Voltage: 48V / Nominal Current: 20 / Nominal Torque: 2.5 N.m / Nominal
+    %speed 3000 rpm
+
+
+     %Motor Parameters
+    Kt = Simulink.Parameter(0.138);   Kt.CoderInfo.StorageClass = 'SimulinkGlobal';
+    Ke = Simulink.Parameter(0.138);   Ke.CoderInfo.StorageClass = 'SimulinkGlobal';
+    R  = Simulink.Parameter(0.14);    R.CoderInfo.StorageClass  = 'SimulinkGlobal';
+    kc = Simulink.Parameter(0.193);    kc.CoderInfo.StorageClass = 'SimulinkGlobal';
+    kf = Simulink.Parameter(2.6e-4);    kf.CoderInfo.StorageClass = 'SimulinkGlobal';
+    invEff = Simulink.Parameter(1.11); invEff.CoderInfo.StorageClass = 'SimulinkGlobal';
+
+    % Torque Speed Map
+    mapData = readmatrix('BLDC_108.xlsx');
+    speed_map_rpm = mapData(:,1);
+    torque_map_Nm = mapData(:,2);
+
+
+    case 3
+
+     %Motor option 3
+end
 
 % Push to base workspace
 assignin('base','Kt',           Kt);
@@ -45,100 +79,138 @@ assignin('base','Ke',           Ke);
 assignin('base','R',            R);
 assignin('base','kc',           kc);
 assignin('base','kf',           kf);
-%assignin('base','invEff',       invEff);
+assignin('base','invEff',       invEff);
 assignin('base','speed_map_rpm',speed_map_rpm);
 assignin('base','torque_map_Nm',torque_map_Nm);
 
-%% 2) Drive‑Cycle Definition
-a      = 0.3;                           % [m/s^2]
-v_end  = 15 * 1000/3600;               % [m/s]
-t_acc  = v_end / a;                    % [s]
-
-numPts = ceil(t_acc*10)+1;
-time   = linspace(0, t_acc, numPts)';   % [s]
-speed  = (a*time) * 3.6;               % [km/h]
-
-ts_speed = timeseries(speed, time);
-assignin('base','ts_speed', ts_speed);
-
-assignin('base','grade',0.02);
-assignin('base','friction_coeff',0.4);
-assignin('base','m_trail',400);
-
-stopTime = time(end);
+%% 2) Battery Definition
 
 
-% if dc==1
-%   a      = 0.3;                     % [m/s²]
-%   v1     = 5 * 1000/3600;           % [m/s]
-%   t_acc1 = v1 / a;                  % [s]
-%   t1     = linspace(0, t_acc1, ceil(t_acc1*10))';
-% 
-%   t2 = (t1(end)+1 : t1(end)+3600)'; % hold 5 km/h for 1 h
-% 
-%   v2     =10 * 1000/3600;           % [m/s]
-%   t_acc2 =(v2 - v1) / a;            % [s]
-%   t3     = linspace(t2(end), t2(end)+t_acc2, ceil(t_acc2*10))';
-% 
-%   t4 = (t3(end)+1 : t3(end)+3600)'; % hold 10 km/h for 1 h
-% 
-%   time  = [t1; t2; t3; t4];
-%   speed = [ (a*t1)*3.6; repmat(v1*3.6, numel(t2),1);
-%             ((v1 + a*(t3 - t2(end))) *3.6); repmat(v2*3.6, numel(t4),1) ];
-% 
-%   ts_speed = timeseries(speed, time);
-%   assignin('base','ts_speed', ts_speed);
-% 
-%   assignin('base','grade',          0.02);    % [%]
-%   assignin('base','friction_coeff', 0.4);  % rolling friction coeff
-%   assignin('base','m_trail',        400);  % [kg]
-% else
-%   error('Drive‑cycle %d not defined.', dc);
-% end
-% 
-% % Determine simulation stop time
-% stopTime = time(end);
+switch bt
 
-%% 3) Plot drive cycle
+    case 1
+
+    %battery option 1
+
+    case 2
+    
+    %battery option 2
+
+
+    case 3
+
+    %battery option 4
+
+end
+
+
+
+%% 3) Drive‑Cycle Definition
+
+
+switch dc
+
+    case 1
+      
+        %Description : Going 0-5 km/h with 0.3 accel, hold that velocity
+        %for a hour. Going 5-10 km/h with 0.3 accel, hold that velocity
+        %during 1 hour
+        
+      a      = 0.3;                     % [m/s²]
+      v1     = 5 * 1000/3600;           % [m/s]
+      t_acc1 = v1 / a;                  % [s]
+      t1     = linspace(0, t_acc1, ceil(t_acc1*10))';
+    
+      t2 = (t1(end)+1 : t1(end)+3600)'; % hold 5 km/h for 1 h
+    
+      v2     =10 * 1000/3600;           % [m/s]
+      t_acc2 =(v2 - v1) / a;            % [s]
+      t3     = linspace(t2(end), t2(end)+t_acc2, ceil(t_acc2*10))';
+    
+      t4 = (t3(end)+1 : t3(end)+3600)'; % hold 10 km/h for 1 h
+    
+      time  = [t1; t2; t3; t4];
+      speed = [ (a*t1)*3.6; repmat(v1*3.6, numel(t2),1);
+                ((v1 + a*(t3 - t2(end))) *3.6); repmat(v2*3.6, numel(t4),1) ];
+    
+      ts_speed = timeseries(speed, time);
+      assignin('base','ts_speed', ts_speed);
+    
+      assignin('base','grade',          0.02);    % [%]
+      assignin('base','friction_coeff', 0.4);  % rolling friction coeff
+      assignin('base','m_trail',        400);  % [kg]
+    
+      stopTime = time(end);
+
+
+    case 2
+    
+    %Description: 0-15 km/h with 0.3 m/s^2 accel.
+
+
+        a      = 0.3;                           % [m/s^2]
+    v_end  = 15 * 1000/3600;               % [m/s]
+    t_acc  = v_end / a;                    % [s]
+    
+    numPts = ceil(t_acc*10)+1;
+    time   = linspace(0, t_acc, numPts)';   % [s]
+    speed  = (a*time) * 3.6;               % [km/h]
+    
+    ts_speed = timeseries(speed, time);
+    assignin('base','ts_speed', ts_speed);
+    
+    assignin('base','grade',0.02);
+    assignin('base','friction_coeff',0.4);
+    assignin('base','m_trail',1800);
+    
+    stopTime = time(end);
+    
+    otherwise
+    error('Drive‑cycle %d not defined.', dc);
+end
+
+
+%% 4) Plot drive cycle
 figure;
 plot(time, speed, 'LineWidth',1.5);
 xlabel('Time [s]'); ylabel('Speed [km/h]');
 title('Drive Cycle'); grid on;
 
-%% 4) Run the Simulink model
+%% 5) Run the Simulink model
 simOut = sim(modelName, ...
     'StopTime',   num2str(stopTime), ...
     'FixedStep',  num2str(StepSize), ...
     'SaveOutput', 'on', ...
     'SaveFormat', 'Dataset');
 
-%% 5) Extract logged signals directly from simOut
-T_struct     = simOut.T_mech;    % Structure with .time & .signals.values
+%% 6) Extract logged signals directly from simOut
+
+
+T_struct     = simOut.T_mech;    
 omega_struct = simOut.omega_el;
 P_struct     = simOut.P_elec;
+
+
 volTS        = simOut.voltage;
 curTS        = simOut.current;
 socTS        = simOut.soc;
 crateTS      = simOut.c_rate;
+
 
 time_sim  = T_struct.time;                    % [s]
 T_sim     = T_struct.signals.values;          % [Nm]
 omega_sim = omega_struct.signals.values;      % [rad/s]
 P_elec    = P_struct.signals.values;          % [W]
 
+
 tV   = volTS.time;    yV   = volTS.signals.values;
 tI   = curTS.time;    yI   = curTS.signals.values;
 tSOC = socTS.time;    ySOC = socTS.signals.values;
 tC   = crateTS.time;  yC   = crateTS.signals.values;
 
-%% 6) Compute & plot efficiency
+%% 7) Compute & plot efficiency
 P_mech = T_sim .* omega_sim;
 eff    = P_mech ./ P_elec; eff(P_elec<1e-6) = 0;
-%%
-figure;
-plot(time_sim, omega_sim, 'LineWidth',1.5);
-xlabel('Time [s]'); ylabel('speed');
-title('speed'); grid on; 
 %%
 
 figure;
@@ -146,14 +218,14 @@ plot(time_sim, eff, 'LineWidth',1.5);
 xlabel('Time [s]'); ylabel('Efficiency \eta');
 title('Motor Efficiency'); grid on; ylim([0 1]);
 
-%% 7) Plot torque‑speed map vs. trajectory
+%% 8) Plot torque‑speed map vs. trajectory
 figure; hold on; grid on;
 plot(speed_map_rpm, torque_map_Nm, 'k--o','LineWidth',1.5);
 plot(omega_sim*60/(2*pi), T_sim, '.','MarkerSize',8);
 xlabel('Speed [RPM]'); ylabel('Torque [Nm]');
 title('Torque‑Speed Map'); legend('Static','Trajectory');
 
-%% 8) Plot battery signals
+%% 9) Plot battery signals
 figure;
 subplot(5,1,1);
 plot(tV,  yV,  'LineWidth',1.2);
