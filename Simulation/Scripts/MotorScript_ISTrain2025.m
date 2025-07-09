@@ -20,7 +20,7 @@ assignin('base','StepSize',StepSize);
 %% 0) User choices
 mt = 1;    % Motor choice
 bt=1;      % Battery choice
-dc = 2;    % Drive‑cycle choice
+dc = 1;    % Drive‑cycle choice
 
 
 %% 1) Motor parameters as Simulink.Parameter objects
@@ -33,11 +33,24 @@ switch mt
     %Description: 
     %BLDC Motor HMP-3000 /   Nominal Power : 3000 W / Nominal Voltage: 48V / Nominal Current: 80 / Nominal Torque: 9.4 N.m / Nominal
     %speed 4000 rpm
-
+    P_nom   = 3000;        % Potência nominal [W]
+    V_nom   = 48;          % Tensão nominal [V]
+    I_nom   = 80;          % Corrente nominal [A]
+    T_nom   = 9.4;         % Binário nominal [Nm]
+    rpm_nom = 4000;        % Velocidade nominal [rpm]
+    eta_nom=0.9;
     %Motor Parameters
-    Kt = Simulink.Parameter(0.115);   Kt.CoderInfo.StorageClass = 'SimulinkGlobal';
-    Ke = Simulink.Parameter(0.115);   Ke.CoderInfo.StorageClass = 'SimulinkGlobal';
-    R  = Simulink.Parameter(0.06);    R.CoderInfo.StorageClass  = 'SimulinkGlobal';
+    [Kt, Ke, R, kc, kf, invEff] = estimate_motor_constants(P_nom, V_nom, I_nom, T_nom, rpm_nom, eta_nom);
+    % Display results
+    fprintf('Kt = %.4f Nm/A\n', Kt);
+    fprintf('Ke = %.4f Vs/rad\n', Ke);
+    fprintf('R  = %.4f Ohm\n', R);
+    fprintf('kc = %.10f W/(rad/s)^2\n', kc);
+    fprintf('kf = %.10f W/(rad/s)\n', kf);
+    fprintf('invEff = %.4f\n', invEff);
+    Kt = Simulink.Parameter(0.1175);   Kt.CoderInfo.StorageClass = 'SimulinkGlobal';
+    Ke = Simulink.Parameter(0.1146);   Ke.CoderInfo.StorageClass = 'SimulinkGlobal';
+    R  = Simulink.Parameter(0.0187);    R.CoderInfo.StorageClass  = 'SimulinkGlobal';
     kc = Simulink.Parameter(1e-4);    kc.CoderInfo.StorageClass = 'SimulinkGlobal';
     kf = Simulink.Parameter(5e-3);    kf.CoderInfo.StorageClass = 'SimulinkGlobal';
     invEff = Simulink.Parameter(0.95); invEff.CoderInfo.StorageClass = 'SimulinkGlobal';

@@ -36,16 +36,15 @@ for i = 1:length(t_peaks)
         (peak_values(i) - base_power) * exp(-0.5 * ((t - t_peaks(i))/sigma).^2);
 end
 
-
 %% Battery Pack Configuration (LiFePO4)
-cell_voltage = 24;             % Each battery
+cell_voltage = 24;             % Each battery (nominal)
 cell_capacity = 100;           % Ah
 usable_capacity_Ah = 0.8 * cell_capacity;  % 80% DoD
-num_series = 2;                % 2 in series => 48 V
-num_parallel = 2;              % 2 branches in parallel => 200 Ah
+num_series = 1;                % 1 battery in series => 24 V
+num_parallel = 2;              % 2 batteries in parallel => 200 Ah total
 
-pack_voltage_nom = cell_voltage * num_series;           % 48 V
-pack_capacity_Ah = usable_capacity_Ah * num_parallel;
+pack_voltage_nom = cell_voltage * num_series;           % 24 V
+pack_capacity_Ah = usable_capacity_Ah * num_parallel;   % 160 Ah usable
 Q_total = pack_capacity_Ah * 3600;                      % [Coulombs]
 
 % --- Print Battery Pack Specifications ---
@@ -61,10 +60,10 @@ fprintf('Pack energy (nominal) : %.0f Wh\n', pack_capacity_Ah * pack_voltage_nom
 fprintf('Total charge capacity : %.0f Coulombs\n', Q_total);
 
 %% Battery Model Parameters
-R0 = 0.02;                   % Internal resistance [Ohm]
-R1 = 0.005;                  
-C1 = 1000;                   % Assumed large for LiFePO₄
-voc_min = 42;                % Cutoff voltage
+R0 = 0.015;                   % Internal resistance [Ohm]
+R1 = 0.004;                  
+C1 = 1500;                   % Assumed large for LiFePO₄
+voc_min = 22;                % Cutoff voltage for 24V pack
 
 % --- Print Electrical Model Parameters ---
 fprintf('\n---- ELECTRICAL MODEL PARAMETERS ----\n');
@@ -98,7 +97,7 @@ power_applied = zeros(size(t));
 
 %% V_oc vs SoC Model (from LiFePO4 0.1C curve)
 soc_points = linspace(0, 1, 11);  % SoC from 0 to 100%
-voc_points = [24.0 25.2 25.4 25.6 25.7 25.8 25.9 26.0 26.2 26.4 26.8] * num_series;  % [V]
+voc_points = [22.0 24.0 25.0 25.5 25.9 26.2 26.5 26.9 27.5 28.3 29.2];  % [V]
 V_ocv_lookup = @(soc_val) interp1(soc_points, voc_points, soc_val, 'linear', 'extrap');
 
 %% Simulation Loop
@@ -167,6 +166,7 @@ xlabel('Time (min)');
 ylabel('C-rate (1/h)');
 title('C-rate Over Time'); grid on;
 
+%% Save power profile
 power_signal.time = t';
 power_signal.signals.values = power_profile';
 power_signal.signals.dimensions = 1;
