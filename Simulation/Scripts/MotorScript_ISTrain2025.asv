@@ -34,13 +34,22 @@ switch mt
     %BLDC Motor HMP-3000 /   Nominal Power : 3000 W / Nominal Voltage: 48V / Nominal Current: 80 / Nominal Torque: 9.4 N.m / Nominal
     %speed 4000 rpm
 
+    P_nom   = 3000;        % Potência nominal [W]
+    V_nom   = 48;          % Tensão nominal [V]
+    I_nom   = 80;          % Corrente nominal [A]
+    T_nom   = 9.4;         % Binário nominal [Nm]
+    rpm_nom = 4000;        % Velocidade nominal [rpm]
+    eta_nom=0.9;
     %Motor Parameters
-    Kt = Simulink.Parameter(0.115);   Kt.CoderInfo.StorageClass = 'SimulinkGlobal';
-    Ke = Simulink.Parameter(0.115);   Ke.CoderInfo.StorageClass = 'SimulinkGlobal';
-    R  = Simulink.Parameter(0.06);    R.CoderInfo.StorageClass  = 'SimulinkGlobal';
-    kc = Simulink.Parameter(1e-4);    kc.CoderInfo.StorageClass = 'SimulinkGlobal';
-    kf = Simulink.Parameter(5e-3);    kf.CoderInfo.StorageClass = 'SimulinkGlobal';
-    invEff = Simulink.Parameter(0.95); invEff.CoderInfo.StorageClass = 'SimulinkGlobal';
+    [Kt, Ke, R, kc, kf, invEff] = estimate_motor_constants(P_nom, V_nom, I_nom, T_nom, rpm_nom, eta_nom);
+    % Display results
+    
+    Kt = Simulink.Parameter(Kt);   Kt.CoderInfo.StorageClass = 'SimulinkGlobal';
+    Ke = Simulink.Parameter(Ke);   Ke.CoderInfo.StorageClass = 'SimulinkGlobal';
+    R  = Simulink.Parameter(R);    R.CoderInfo.StorageClass  = 'SimulinkGlobal';
+    kc = Simulink.Parameter(kc);    kc.CoderInfo.StorageClass = 'SimulinkGlobal';
+    kf = Simulink.Parameter(kf);    kf.CoderInfo.StorageClass = 'SimulinkGlobal';
+    invEff = Simulink.Parameter(invEff); invEff.CoderInfo.StorageClass = 'SimulinkGlobal';
 
     % Torque Speed Map
     mapData = readmatrix('HMP-3000.xlsx');
@@ -108,65 +117,116 @@ end
 %% 3) Drive‑Cycle Definition
 
 
+% DRIVE CYCLE DEFINITIONS
 switch dc
 
-    case 1
-      
-        %Description : Going 0-5 km/h with 0.3 accel, hold that velocity
-        %for a hour. Going 5-10 km/h with 0.3 accel, hold that velocity
-        %during 1 hour
-        
-      a      = 0.3;                     % [m/s²]
-      v1     = 5 * 1000/3600;           % [m/s]
-      t_acc1 = v1 / a;                  % [s]
-      t1     = linspace(0, t_acc1, ceil(t_acc1*10))';
-    
-      t2 = (t1(end)+1 : t1(end)+3600)'; % hold 5 km/h for 1 h
-    
-      v2     =10 * 1000/3600;           % [m/s]
-      t_acc2 =(v2 - v1) / a;            % [s]
-      t3     = linspace(t2(end), t2(end)+t_acc2, ceil(t_acc2*10))';
-    
-      t4 = (t3(end)+1 : t3(end)+3600)'; % hold 10 km/h for 1 h
-    
-      time  = [t1; t2; t3; t4];
-      speed = [ (a*t1)*3.6; repmat(v1*3.6, numel(t2),1);
-                ((v1 + a*(t3 - t2(end))) *3.6); repmat(v2*3.6, numel(t4),1) ];
-    
-      ts_speed = timeseries(speed, time);
-      assignin('base','ts_speed', ts_speed);
-    
-      assignin('base','grade',          0.02);    % [%]
-      assignin('base','friction_coeff', 0.4);  % rolling friction coeff
-      assignin('base','m_trail',        400);  % [kg]
-    
-      stopTime = time(end);
 
+    case 1
+        %% Case 1: 3‑hour drive at constant 5 km/h, 2% gradient, 1800 kg
+        v_kmh  = 5;
+        v_ms   = v_kmh * 1000/3600;
+        duration = 3 * 3600;                 % seconds (3 h)
+
+        time  = (0:1:duration)';             % 1 s resolution
+        speed = repmat(v_kmh, numel(time), 1);
+
+        ts_speed = timeseries(speed, time);
+        assignin('base','ts_speed',         ts_speed);
+        assignin('base','grade',            0.02);
+        assignin('base','friction_coeff',   0.004);
+        assignin('base','m_trail',          1800);
+
+        stopTime = duration;
 
     case 2
-    
-    %Description: 0-15 km/h with 0.3 m/s^2 accel.
+        %% Case 2: 0→15 km/h at a = 0.3 m/s^2; report acceleration time
+        a     = 0.3;                       % [m/s^2]
+        v_end = 15 * 1000/3600;           % [m/s]
+        t_acc = v_end / a;                % time to reach 15 km/h
+        fprintf('Case 2 acceleration time: %.2f s\n', t_acc);
 
+        numPts = ceil(t_acc*10) + 1;
+        time   = linspace(0, t_acc, numPts)';
+        speed  = (a * time) * 3.6;         % [km/h]
 
-        a      = 0.3;                           % [m/s^2]
-    v_end  = 15 * 1000/3600;               % [m/s]
-    t_acc  = v_end / a;                    % [s]
-    
-    numPts = ceil(t_acc*10)+1;
-    time   = linspace(0, t_acc, numPts)';   % [s]
-    speed  = (a*time) * 3.6;               % [km/h]
-    
-    ts_speed = timeseries(speed, time);
-    assignin('base','ts_speed', ts_speed);
-    
-    assignin('base','grade',0.02);
-    assignin('base','friction_coeff',0.4);
-    assignin('base','m_trail',400);
-    
-    stopTime = time(end);
-    
+        ts_speed = timeseries(speed, time);
+        assignin('base','ts_speed',         ts_speed);
+        assignin('base','grade',            0.02);
+        assignin('base','friction_coeff',   0.004);
+        assignin('base','m_trail',          1800);
+
+        stopTime = time(end);
+
+    case 3
+        %% Case 3: 0→11 km/h at a = 0.3 m/s^2; report acceleration time
+        a     = 0.3;                       % [m/s^2]
+        v_end = 11 * 1000/3600;           % [m/s]
+        t_acc = v_end / a;                % time to reach 11 km/h
+        fprintf('Case 3 acceleration time: %.2f s\n', t_acc);
+
+        numPts = ceil(t_acc*10) + 1;
+        time   = linspace(0, t_acc, numPts)';
+        speed  = (a * time) * 3.6;         % [km/h]
+
+        ts_speed = timeseries(speed, time);
+        assignin('base','ts_speed',         ts_speed);
+        assignin('base','grade',            0.02);
+        assignin('base','friction_coeff',   0.004);
+        assignin('base','m_trail',          1800);
+
+        stopTime = time(end);
+
+    case 4
+        %% Case 4: 3 h at ~5 km/h with one accel burst each hour
+        a      = 0.3;                     % [m/s^2]
+        v_targets_kmh = [5, 10, 15];
+        v_targets_ms  = v_targets_kmh * 1000/3600;
+        T_hr = 3600;                      % one hour [s]
+
+        time = [];
+        speed = [];
+        % Hour 1: ramp 0→5 at start, then hold
+        t1r = linspace(0, v_targets_ms(1)/a, ceil((v_targets_ms(1)/a)*10)+1)';
+        t1h = (t1r(end)+1 : T_hr)';
+        v1r = a * t1r * 3.6;
+        v1h = repmat(v_targets_kmh(1), numel(t1h),1);
+
+        % Hour 2: ramp 5→10 at midpoint, then hold
+        t2_mid = T_hr + T_hr/2;
+        t2r = linspace(t2_mid - (v_targets_ms(2)-v_targets_ms(1))/(2*a), ...
+                       t2_mid + (v_targets_ms(2)-v_targets_ms(1))/(2*a), ...
+                       ceil(((v_targets_ms(2)-v_targets_ms(1))/a)*10)+1)';
+        t2_pre  = (T_hr+1 : t2r(1)-1)';
+        t2_post = (t2r(end)+1 : 2*T_hr)';
+        v2_pre  = repmat(v_targets_kmh(1), numel(t2_pre),1);
+        v2r     = (v_targets_ms(1) + a*(t2r - t2r(1))) *3.6;
+        v2_post = repmat(v_targets_kmh(2), numel(t2_post),1);
+
+        % Hour 3: ramp 10→15 at midpoint, then hold
+        t3_mid = 2*T_hr + T_hr/2;
+        t3r = linspace(t3_mid - (v_targets_ms(3)-v_targets_ms(2))/(2*a), ...
+                       t3_mid + (v_targets_ms(3)-v_targets_ms(2))/(2*a), ...
+                       ceil(((v_targets_ms(3)-v_targets_ms(2))/a)*10)+1)';
+        t3_pre  = (2*T_hr+1 : t3r(1)-1)';
+        t3_post = (t3r(end)+1 : 3*T_hr)';
+        v3_pre  = repmat(v_targets_kmh(2), numel(t3_pre),1);
+        v3r     = (v_targets_ms(2) + a*(t3r - t3r(1))) *3.6;
+        v3_post = repmat(v_targets_kmh(3), numel(t3_post),1);
+
+        % Stitch segments
+        time  = [t1r; t1h; t2_pre; t2r; t2_post; t3_pre; t3r; t3_post];
+        speed = [v1r; v1h; v2_pre; v2r; v2_post; v3_pre; v3r; v3_post];
+
+        ts_speed = timeseries(speed, time);
+        assignin('base','ts_speed',         ts_speed);
+        assignin('base','grade',            0.02);
+        assignin('base','friction_coeff',   0.004);
+        assignin('base','m_trail',          1800);
+
+        stopTime = time(end);
+
     otherwise
-    error('Drive‑cycle %d not defined.', dc);
+        error('Drive‑cycle %d not defined.', dc);
 end
 
 
