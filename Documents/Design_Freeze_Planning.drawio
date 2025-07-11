@@ -1,11 +1,101 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0" version="28.0.3">
   <diagram name="Página-1" id="UQAMS3ypnw-lzLXExP8G">
-    <mxGraphModel dx="1152" dy="659" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="853" dy="488" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="mCMqL1_qYuJohWprYD97-1" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="180" y="180" width="230" height="60" as="geometry" />
+        <mxCell id="mCMqL1_qYuJohWprYD97-1" value="&lt;b&gt;&lt;font style=&quot;font-size: 17px;&quot;&gt;Milestones&lt;/font&gt;&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="2180" y="180" width="1080" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-2" value="Electric Motor" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="440" width="235" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-3" value="Battery" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="390" width="230" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-4" value="&lt;b&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;Topics&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="215" y="340" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-5" value="Motor Controller" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="490" width="235" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-6" value="Energy Recovery System" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="550" width="235" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-7" value="Cooling" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="610" width="235" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-8" value="Integration&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="670" width="235" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-9" value="&lt;b&gt;&lt;font style=&quot;font-size: 18px;&quot;&gt;Possible showcases&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="505" y="350" width="205" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-10" value="Diagram" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="492.5" y="400" width="230" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-11" value="CAD" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="492.5" y="460" width="230" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-12" value="Simulations and Visualisations" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="492.5" y="510" width="230" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-13" value="Arquitetura geral" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="940" y="295" width="530" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-17" value="Diagrama da arquitetura geral" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="mCMqL1_qYuJohWprYD97-13">
+          <mxGeometry x="30" y="45" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-27" value="Métricas relevantes" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="mCMqL1_qYuJohWprYD97-13">
+          <mxGeometry x="270" y="45" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-14" value="Sistema de Baterias" style="swimlane;whiteSpace=wrap;html=1;startSize=23;" vertex="1" parent="1">
+          <mxGeometry x="940" y="440" width="530" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-28" value="Métricas relevantes" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="mCMqL1_qYuJohWprYD97-14">
+          <mxGeometry x="50" y="42.5" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-29" value="Componentes principais" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="mCMqL1_qYuJohWprYD97-14">
+          <mxGeometry x="280" y="42.5" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-15" value="Motor elétrico&amp;nbsp;" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="940" y="580" width="530" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-30" value="Métricas relevantes" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="mCMqL1_qYuJohWprYD97-15">
+          <mxGeometry x="50" y="50" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-31" value="Componentes principais" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="mCMqL1_qYuJohWprYD97-15">
+          <mxGeometry x="290" y="50" width="190" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-16" value="Controlador" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="940" y="720" width="530" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-18" value="Energy Recovery" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1488" y="295" width="530" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-19" value="Controlador" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1490" y="440" width="530" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-20" value="Controlador" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1488" y="580" width="530" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-21" value="Controlador" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1488" y="720" width="530" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-25" value="&lt;span style=&quot;font-size: 17px;&quot;&gt;&lt;b&gt;Presentation Topics&lt;/b&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="938" y="180" width="1080" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-32" value="Esquema de Arquitetura geral &lt;b&gt;(PW-M1)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="2190" y="250" width="422" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-33" value="Simulação tipo Carla&amp;nbsp;&lt;b&gt;(PW-M2)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="2640" y="250" width="422" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-45" value="Notas" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="2301" y="870" width="409" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="mCMqL1_qYuJohWprYD97-44" value="1. Temos que perceber o que é a simulação tipo CARLA permite mostrar" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="mCMqL1_qYuJohWprYD97-45">
+          <mxGeometry x="9" y="50" width="340" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
