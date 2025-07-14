@@ -36,9 +36,35 @@ dt = 1;                        % Time step [s]
 t_end = 3 * 3600;              % Total simulation time: 3 hours [s]
 t = 0:dt:t_end;
 
-%% Power Profile (Constant)
-base_power = 540.7 + 0.1 * 540.7;   % Base power in Watts
+%% Power Profile
+base_power = 540.7 + 0.1*540.7;     % Base power in Watts
+
+% Reduced number of peak events over 3 hours (12 peaks)
+t_peaks = [450, 900, 1350, 1800, 2250, 2700, 3150, 3600, 4050, 4500, 4950, 5400, 9000]; % in seconds
+
+% Original peak values
+peak_values_orig = [1000, 1500, 6861+0.01*6861, 3000, 4000, 6000, 6861+0.01*6861, 2500, 3000, 5000, 3500, 2000, 2000];
+
+% Copy to new vector
+peak_values = peak_values_orig;
+
+% Scale down all peaks except indices 3 and 7
+for idx = 1:length(peak_values)
+    if idx ~=3 && idx ~=7
+        peak_values(idx) = peak_values(idx)*0.1;
+    end
+end
+
+sigma = 50;  % Width of each peak in seconds
+
+% Start with base power profile
 power_profile = base_power * ones(size(t));
+
+% Superimpose each Gaussian peak
+for i = 1:length(t_peaks)
+    power_profile = power_profile + ...
+        (peak_values(i) - base_power) * exp(-0.5 * ((t - t_peaks(i))/sigma).^2);
+end
 
 %% Battery Pack Configuration (ECO-Worthy LiFePO4)
 cell_voltage = 25.6;               % Nominal voltage per battery pack [V]

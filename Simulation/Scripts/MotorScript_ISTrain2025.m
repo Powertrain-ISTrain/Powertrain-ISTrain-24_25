@@ -96,17 +96,22 @@ assignin('base','torque_map_Nm',torque_map_Nm);
 
 switch bt
     case 1
-        % LiFePO4 100Ah x2 in parallel
+        % LiFePO4 100Ah x2 in series (2 batteries total)
         parameters = struct;
-        parameters.usable_capacity_Ah = 2 * 100 * 0.8;   % 160 Ah usable
-        parameters.pack_voltage_nom   = 25.6;
-        parameters.R0 = 0.015;
-        parameters.R1 = 0.004;
-        parameters.C1 = 1500;
-        parameters.voc_min = 22;
-        parameters.I_max = 200;
-        parameters.soc_points = linspace(0, 1, 11);
-        parameters.voc_points = [22.0 24.0 25.0 25.5 25.9 26.2 26.5 26.9 27.5 28.3 29.2];
+        parameters.usable_capacity_Ah = 100 * 0.8;        % 80 Ah usable (series = same Ah)
+        parameters.pack_voltage_nom   = 2 * 25.6;         % 51.2 V nominal
+        parameters.R0 = 0.015 * 2;                        % Series: R adds up
+        parameters.R1 = 0.004 * 2;
+        parameters.C1 = 1500 / 2;                         % Series: C1 halves
+        parameters.voc_min = 2 * 22;                      % 44 V minimum
+        parameters.I_max = 100;                           % Same as single battery
+
+        % VOC vs SOC based on LiFePO₄ cell characteristics
+        voc_cell = [2.5 3.0 3.15 3.25 3.3 3.35 3.6];       % single cell
+        soc_cell = [0.0 0.1 0.2 0.5 0.8 0.9 1.0];
+        voc_pack = 16 * voc_cell;                         % 2S: 8×2 = 16 cells
+        parameters.soc_points = linspace(0, 1, 21);       % high-resolution curve
+        parameters.voc_points = interp1(soc_cell, voc_pack, parameters.soc_points, 'pchip');  % smooth
 
     case 2
         % LiFePO4 100Ah x2 in parallel AND x2 in series (4 batteries total)
@@ -118,8 +123,11 @@ switch bt
         parameters.C1 = 1500 / 2;                        % Series halves C1
         parameters.voc_min = 2 * 22;                     % 44 V cutoff for 2 cells in series
         parameters.I_max = 200;                          % Same current as 2P config
-        parameters.soc_points = linspace(0, 1, 11);
-        parameters.voc_points = 2 * [22.0 24.0 25.0 25.5 25.9 26.2 26.5 26.9 27.5 28.3 29.2];  % double voltage points
+        voc_cell = [2.5 3.0 3.15 3.25 3.3 3.35 3.6];
+        soc_cell = [0.0 0.1 0.2 0.5 0.8 0.9 1.0];
+        voc_pack = 16 * voc_cell;
+        parameters.soc_points = linspace(0, 1, 21);
+        parameters.voc_points = interp1(soc_cell, voc_pack, parameters.soc_points, 'pchip');
 
 
     case 3
@@ -163,11 +171,11 @@ elems(7).Name = 'I_max';
 
 elems(8) = Simulink.BusElement;
 elems(8).Name = 'soc_points';
-elems(8).Dimensions = 11;  % or however many points you use
+elems(8).Dimensions = 21;  % or however many points you use
 
 elems(9) = Simulink.BusElement;
 elems(9).Name = 'voc_points';
-elems(9).Dimensions = 11;
+elems(9).Dimensions = 21;
 
 % Create and assign the bus object
 parametersBus = Simulink.Bus;
