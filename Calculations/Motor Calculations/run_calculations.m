@@ -13,7 +13,7 @@ max_gradient=1.19; % 1:84 Defined em [1]
 
 %Variable Parameters
 
-G=10;
+G=5;
 loco_mass=600 ; % (defined in [4])
 driven_wheels=8; % (defined in [3])
 nr_motors=2;% One motor per bogie (defined in [3])
@@ -33,13 +33,13 @@ grade=1.19;% 1:84 Defined em [1]
 
 %Variable Parameters
 
-G=10;
+G=5;
 m_loco=600 ; % (defined in [4])
 n_mot=2;% One motor per bogie (defined in [3])
 r_w=0.100; %m - Minimum wheel diameter is 200 mm (defined in [4])
 eta_mech = 0.85; %Average value (defined in [2])
 eta_elec = 0.90; %Average value (defined in [2])
-a=0.3; % Maximum Acceleration (prescribed value)
+a=0.2 ; % Maximum Acceleration (prescribed value)
 %% RUN FILES
 Adhesion_verification
 peak_motor_calc

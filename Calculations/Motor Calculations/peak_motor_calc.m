@@ -29,7 +29,7 @@ T_wheel = F_req * r_w;
 
 %% 4) Motor torque (per motor) for start
 T_motor = (T_wheel / n_mot) / (G * eta_mech);
-T_motor = 1.10 * T_motor;       % +10% margin
+T_motor = 1.15 * T_motor;       % +10% margin
 
 %% 5) Motor speed at v_max
 omega_wheel = v_max / r_w;           
@@ -38,7 +38,7 @@ rpm_motor   = omega_motor * 60/(2*pi);
 
 %% 6) Mechanical power at wheels & apply safety margin
 P_mech_wheel = F_req * v_max;        % P = F * v
-P_mech_wheel = 1.1 * P_mech_wheel;  % +10% margin
+P_mech_wheel = 1.15 * P_mech_wheel;  % +10% margin
 
 %% 7) Mechanical power at motor shaft (total & per‑motor)
 P_mech_motor_total = P_mech_wheel / eta_mech;

@@ -11,16 +11,19 @@ Crr       = 0.004;    % rolling resistance coeff
 g         = 9.81;     % gravity [m/s^2]
 rw        = 0.100;    % wheel radius [m]
 mech_eff  = 0.85;     % drivetrain mechanical efficiency
-G         = 5;       % gearbox ratio
+G         = 8;       % gearbox ratio
+mu=0.35; % Friction coefficient (for adhesion purposes)
+n_m=2; % Number of motors
+SF=15; % Safety margin on torque (in percentage)
 
 %% Solver fixed‑step size (for model config)
-StepSize = 0.1;               % [s]
+StepSize = 0.001;               % [s]
 assignin('base','StepSize',StepSize);
 
 %% 0) User choices
 mt = 1;    % Motor choice
 bt=1;      % Battery choice
-dc = 1;    % Drive‑cycle choice
+dc = 4;    % Drive‑cycle choice
 
 
 %% 1) Motor parameters as Simulink.Parameter objects
@@ -98,13 +101,13 @@ switch bt
     case 1
         % LiFePO4 100Ah x2 in series (2 batteries total)
         parameters = struct;
-        parameters.usable_capacity_Ah = 100 * 0.8;        % 80 Ah usable (series = same Ah)
+        parameters.usable_capacity_Ah = 100*0.9 ;        % 80 Ah usable (series = same Ah)
         parameters.pack_voltage_nom   = 2 * 25.6;         % 51.2 V nominal
         parameters.R0 = 0.015 * 2;                        % Series: R adds up
         parameters.R1 = 0.004 * 2;
         parameters.C1 = 1500 / 2;                         % Series: C1 halves
         parameters.voc_min = 2 * 22;                      % 44 V minimum
-        parameters.I_max = 100;                           % Same as single battery
+        parameters.I_max = 120;                           % Same as single battery
 
         % VOC vs SOC based on LiFePO₄ cell characteristics
         voc_cell = [2.5 3.0 3.15 3.25 3.3 3.35 3.6];       % single cell
@@ -212,30 +215,59 @@ assignin('base','parametersBus',parametersBus);
             % Assign parameters
             assignin('base', 'grade', 0.02);          % [%]
             assignin('base', 'friction_coeff', 0.004);
-            assignin('base', 'm_trail', 1800);
+            assignin('base', 'm_trail', 400);
 
             stopTime = time(end);
 
-        case 2  % 0-15 km/h acceleration
-            a      = 0.3;                           % [m/s^2]
-            v_end  = 15 * 1000/3600;               % [m/s]
-            t_acc  = v_end / a;                    % [s]
+      case 2  % 0–15 km/h piecewise acceleration
+    % Breakpoints (km/h → m/s)
+    v_kmh = [0, 5, 10, 15];
+    v_ms  = v_kmh * 1000/3600;
 
-            % Time and speed vectors
-            numPts = ceil(t_acc * 10) + 1;
-            time   = linspace(0, t_acc, numPts)';   % [s]
-            speed  = (a * time) * 3.6;             % [km/h]
+    % Corresponding accel rates (m/s^2)
+    a_ms2 = [0.40, 0.25, 0.15];  
 
-            % Report acceleration time
-            fprintf('Time to accelerate 0 to 15 km/h: %.2f seconds\n', t_acc);
+    % Preallocate time & speed arrays
+    time = [];
+    speed = [];
 
-            ts_speed = timeseries(speed, time);
-            assignin('base', 'ts_speed', ts_speed);
-            assignin('base', 'grade', 0.02);
-            assignin('base', 'friction_coeff', 0.004);
-            assignin('base', 'm_trail', 1800);
+    % Loop over each segment
+    t_cum = 0;
+    for seg = 1:length(a_ms2)
+        v_start = v_ms(seg);
+        v_end   = v_ms(seg+1);
+        a       = a_ms2(seg);
 
-            stopTime = time(end);
+        % Duration of this segment
+        t_seg = (v_end - v_start) / a;  % seconds
+
+        % Build time vector at 10 Hz sampling (0.1 s steps)
+        nPts = ceil(t_seg*10) + 1;
+        t_local = linspace(0, t_seg, nPts)';
+
+        % Build speed vector (m/s) then convert to km/h
+        v_local = (v_start + a * t_local) * 3.6;  % km/h
+
+        % Offset local time by cumulative time and append
+        time  = [time;  t_cum + t_local];
+        speed = [speed; v_local];
+
+        % Update cumulative time
+        t_cum = t_cum + t_seg;
+    end
+
+    % Report total accel time
+    fprintf('Time to accelerate 0→15 km/h in piecewise ramps: %.2f s\n', time(end));
+
+    % Create timeseries and assign to base
+    ts_speed           = timeseries(speed, time);
+    assignin('base', 'ts_speed', ts_speed);
+    assignin('base', 'grade', 0.02);
+    assignin('base', 'friction_coeff', 0.004);
+    assignin('base', 'm_trail', 1800);
+
+    stopTime = time(end);
+
 
         case 3  % 0-11 km/h acceleration
             a      = 0.3;                           % [m/s^2]
@@ -259,29 +291,29 @@ assignin('base','parametersBus',parametersBus);
             stopTime = time(end);
 
         case 4  % Three hours at peaks each hour
-            a      = 0.3;                     % [m/s^2] accel
+            a      = [0.40,0.25,0.1];                     % [m/s^2] accel
             v1     = 5 * 1000/3600;           % [m/s]
             v2     = 10 * 1000/3600;          % [m/s]
             v3     = 15 * 1000/3600;          % [m/s]
             hour_s = 3600;                    % seconds in an hour
 
             % First hour: accel 0->5 at start, then hold
-            t_acc1 = v1 / a;
+            t_acc1 = v1 / a(1);
             t1 = linspace(0, t_acc1, ceil(t_acc1*10))';
             t1_hold = (t1(end)+0.1 : 1/10 : hour_s)';
-            v1_vec = [ (a * t1)*3.6; repmat(v1*3.6, numel(t1_hold),1)];
+            v1_vec = [ (a(1) * t1)*3.6; repmat(v1*3.6, numel(t1_hold),1)];
             time1  = [t1; t1_hold];
 
             % Second hour: hold at 5, accel in middle to 10
             t2_start = hour_s;
             t2_mid   = t2_start + hour_s/2;
             t2_acc_start = t2_mid;
-            t_acc2 = (v2 - v1) / a;
+            t_acc2 = (v2 - v1) / a(2);
             t2_acc = linspace(t2_acc_start, t2_acc_start + t_acc2, ceil(t_acc2*10))';
             t2_pre = linspace(t2_start+0.1, t2_acc_start, ceil((t2_acc_start - t2_start)*10))';
             t2_post = linspace(t2_acc(end), hour_s*2, ceil((hour_s*2 - t2_acc(end))*10))';
             v2_vec = [ repmat(v1*3.6, numel(t2_pre),1);
-                       ((v1 + a*(t2_acc - t2_acc_start))*3.6);
+                       ((v1 + a(2)*(t2_acc - t2_acc_start))*3.6);
                        repmat(v2*3.6, numel(t2_post),1)];
             time2 = [t2_pre; t2_acc; t2_post];
 
@@ -289,12 +321,12 @@ assignin('base','parametersBus',parametersBus);
             t3_start = hour_s*2;
             t3_mid   = t3_start + hour_s/2;
             t3_acc_start = t3_mid;
-            t_acc3 = (v3 - v2) / a;
+            t_acc3 = (v3 - v2) / a(3);
             t3_acc = linspace(t3_acc_start, t3_acc_start + t_acc3, ceil(t_acc3*10))';
             t3_pre = linspace(t3_start+0.1, t3_acc_start, ceil((t3_acc_start - t3_start)*10))';
             t3_post = linspace(t3_acc(end), hour_s*3, ceil((hour_s*3 - t3_acc(end))*10))';
             v3_vec = [ repmat(v2*3.6, numel(t3_pre),1);
-                       ((v2 + a*(t3_acc - t3_acc_start))*3.6);
+                       ((v2 + a(3)*(t3_acc - t3_acc_start))*3.6);
                        repmat(v3*3.6, numel(t3_post),1)];
             time3 = [t3_pre; t3_acc; t3_post];
 
@@ -306,7 +338,7 @@ assignin('base','parametersBus',parametersBus);
             assignin('base', 'ts_speed', ts_speed);
             assignin('base', 'grade', 0.02);
             assignin('base', 'friction_coeff', 0.004);
-            assignin('base', 'm_trail', 1800);
+            assignin('base', 'm_trail', 400);
 
             stopTime = time(end);
 
@@ -364,11 +396,25 @@ xlabel('Time [s]'); ylabel('Efficiency \eta');
 title('Motor Efficiency'); grid on; ylim([0 1]);
 
 %% 8) Plot torque‑speed map vs. trajectory
+
+%Calculating adhesion quantities
+
+F_adh    = mu * m_loco * g*cos(grade);                  % [N]
+T_adh    = F_adh * rw / (G * mech_eff); 
+T_adh    = T_adh/2; % number of motors
+
+%Plotting
+rpm_axis = linspace(min(speed_map_rpm), max(speed_map_rpm), 200);
+
+
 figure; hold on; grid on;
 plot(speed_map_rpm, torque_map_Nm, 'k--o','LineWidth',1.5);
 plot(omega_sim*60/(2*pi), T_sim, '.','MarkerSize',8);
+plot(rpm_axis, T_adh * ones(size(rpm_axis)), 'r-', 'LineWidth',2);
 xlabel('Speed [RPM]'); ylabel('Torque [Nm]');
-title('Torque‑Speed Map'); legend('Static','Trajectory');
+title('Torque‑Speed Map'); 
+legend('Static','Trajectory','Adhesion Limit','Location','best');
+
 
 %% 9) Plot battery signals
 figure;
