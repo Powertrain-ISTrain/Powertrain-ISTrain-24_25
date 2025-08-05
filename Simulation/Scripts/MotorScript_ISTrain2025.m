@@ -23,7 +23,7 @@ assignin('base','StepSize',StepSize);
 %% 0) User choices
 mt = 1;    % Motor choice
 bt=1;      % Battery choice
-dc = 4;    % Drive‑cycle choice
+dc = 2;    % Drive‑cycle choice
 
 
 %% 1) Motor parameters as Simulink.Parameter objects
@@ -452,3 +452,85 @@ legend('P_{elec} (Input to Battery)', ...
        'P_{mech} (Motor Output)', ...
        'Location','best');
 grid on;
+
+
+T_sim     = simOut.T_mech.signals.values;    % Torque [Nm]
+time_sim  = simOut.T_mech.time;              % Time [s]
+yI        = simOut.current.signals.values;   % Battery current [A]
+tI        = simOut.current.time;             % Time vector for battery current
+I_phase = T_sim / Kt.Value;  % [A], per motor
+I_phase_total = 2 * I_phase;
+figure;
+plot(time_sim, I_phase_total, 'b-', 'LineWidth', 1.5); hold on;
+plot(tI, yI, 'r--', 'LineWidth', 1.5);
+xlabel('Time [s]');
+ylabel('Current [A]');
+legend('I_{phase, total}', 'I_{battery}', 'Location', 'best');
+title('Motor Phase Current vs Battery Current');
+grid on;
+
+
+%% 11) Confirm HPM3000 Test Report with Calculated Quantities
+
+% Columns: U | I | Pin | T | N | Pout | eta
+mapData = [...
+48.0 14.87 715.3 0.7 4489 371 51.9;
+48.0 15.30 735.7 0.9 4487 433 58.9;
+48.0 16.07 773.0 0.9 4484 432 55.9;
+48.0 16.82 809.2 1.0 4480 494 61.0;
+48.0 18.10 870.5 1.1 4472 554 63.6;
+48.0 19.91 957.6 1.4 4461 676 70.6;
+48.0 22.67 1090  1.7 4445 796 73.0;
+48.0 26.16 1258  2.1 4421 975 77.5;
+48.0 30.02 1443  2.5 4396 1152 79.8;
+48.0 34.17 1643  3.0 4366 1384 84.2;
+48.0 38.39 1845  3.5 4339 1615 87.5;
+48.0 43.64 2097  4.0 4308 1841 87.8;
+48.0 49.07 2358  4.6 4267 2061 87.4;
+48.0 54.37 2613  5.2 4234 2338 89.5;
+48.0 59.81 2874  5.9 4200 2610 90.8;
+48.0 65.69 3157  6.5 4159 2866 90.8;
+48.0 71.96 3458  7.3 4119 3180 92.0;
+48.0 78.72 3783  8.0 4073 3425 90.5;
+48.0 87.20 4186  8.9 4017 3773 90.1;
+48.0 94.31 4527 10.0 3914 4098 90.5;
+48.0 94.55 4538 10.9 3578 4084 90.0;
+48.0 94.83 4551 10.9 3170 4050 90.0;
+48.0 94.60 4540 14.0 2632 3859 85.1;
+48.0 93.03 4465 16.8 2167 3812 85.4;
+48.0 92.81 4455 20.8 1508 3284 73.7;
+48.0 110.21 5290 25.1 1350 3558 67.3];
+
+% Extract test columns
+U_test     = mapData(:,1);   % Voltage [V] - not needed in model
+I_test     = mapData(:,2);   % Current [A] - not needed in model
+Pin_meas   = mapData(:,3);   % Input Power [W]
+T_test     = mapData(:,4);   % Torque [Nm]
+N_test     = mapData(:,5);   % Speed [rpm]
+Pout_meas  = mapData(:,6);   % Output Power [W]
+eta_meas   = mapData(:,7);   % Efficiency [%]
+
+% Convert rpm to rad/s
+omega_test = 2 * pi * N_test / 60;
+
+% Preallocate
+Pin_model = zeros(size(T_test));
+Pout_model = zeros(size(T_test));
+I_phase_model = zeros(size(T_test));
+
+% Calculate power using your function
+for i = 1:length(T_test)
+    [Pin_model(i), Pout_model(i), I_phase_model(i)] = ...
+        calc_elec_power(T_test(i), omega_test(i), ...
+                        Kt.Value, Ke.Value, R.Value, kc.Value, kf.Value);
+end
+figure;
+plot(Pin_meas, 'k--', 'LineWidth', 1.2); hold on;
+plot(Pin_model, 'b-', 'LineWidth', 1.5);
+xlabel('Test Point Index');
+ylabel('Input Power [W]');
+legend('Measured Pin', 'Model Pin');
+title('Comparison of Electrical Input Power (Model vs Measured)');
+grid on;
+rel_error = 100 * abs(Pin_model - Pin_meas) ./ Pin_meas;
+fprintf('Mean relative error: %.2f%%\n', mean(rel_error));
