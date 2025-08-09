@@ -1,4 +1,4 @@
-function [P_elec,P_out, I_phase]  = calc_elec_power(T, omega, Kt,Ke,R,kc,kf)
+function [P_elec,P_out, I_phase,E]  = calc_elec_power(T, omega, Kt,Ke,R,kc,kf)
   %This function calculates the electrical power needed for a given
   %mechanical power and motor parameters.
 

@@ -520,7 +520,7 @@ I_phase_model = zeros(size(T_test));
 
 % Calculate power using your function
 for i = 1:length(T_test)
-    [Pin_model(i), Pout_model(i), I_phase_model(i)] = ...
+    [Pin_model(i), Pout_model(i), I_phase_model(i),EMF(i)] = ...
         calc_elec_power(T_test(i), omega_test(i), ...
                         Kt.Value, Ke.Value, R.Value, kc.Value, kf.Value);
 end
@@ -534,3 +534,28 @@ title('Comparison of Electrical Input Power (Model vs Measured)');
 grid on;
 rel_error = 100 * abs(Pin_model - Pin_meas) ./ Pin_meas;
 fprintf('Mean relative error: %.2f%%\n', mean(rel_error));
+
+figure;
+plot(I_phase_model, 'k--', 'LineWidth', 1.2); hold on;
+plot(Pin_model/48, 'b-', 'LineWidth', 1.5);
+xlabel('Test Point Index');
+ylabel('Current [A]');
+legend('Model Phase Current', 'Model Battery Current');
+title('Comparison of Electrical Currents during the test (Model)');
+grid on;
+
+figure;
+yyaxis left;
+plot(N_test, T_test, 'b-o', 'LineWidth', 1.5);
+ylabel('Torque [Nm]');
+ylim([0, max(T_test)*1.1]);
+
+yyaxis right;
+plot(N_test, EMF, 'r--s', 'LineWidth', 1.5);
+ylabel('Back-EMF [V]');
+ylim([0, max(EMF)*1.1]);
+
+xlabel('Speed [rpm]');
+title('Torque and Back-EMF vs Speed');
+legend('Torque', 'Back-EMF', 'Location', 'best');
+grid on;
