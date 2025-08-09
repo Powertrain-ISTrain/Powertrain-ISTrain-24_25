@@ -11,10 +11,10 @@ Crr       = 0.004;    % rolling resistance coeff
 g         = 9.81;     % gravity [m/s^2]
 rw        = 0.100;    % wheel radius [m]
 mech_eff  = 0.85;     % drivetrain mechanical efficiency
-G         = 8;       % gearbox ratio
+G         = 10;       % gearbox ratio
 mu=0.35; % Friction coefficient (for adhesion purposes)
 n_m=2; % Number of motors
-SF=15; % Safety margin on torque (in percentage)
+SF=30; % Safety margin on torque (in percentage)
 
 %% Solver fixed‑step size (for model config)
 StepSize = 0.001;               % [s]
@@ -23,7 +23,7 @@ assignin('base','StepSize',StepSize);
 %% 0) User choices
 mt = 1;    % Motor choice
 bt=1;      % Battery choice
-dc = 2;    % Drive‑cycle choice
+dc = 1;    % Drive‑cycle choice
 
 
 %% 1) Motor parameters as Simulink.Parameter objects
@@ -107,7 +107,7 @@ switch bt
         parameters.R1 = 0.004 * 2;
         parameters.C1 = 1500 / 2;                         % Series: C1 halves
         parameters.voc_min = 2 * 22;                      % 44 V minimum
-        parameters.I_max = 120;                           % Same as single battery
+        parameters.I_max = 300;                           % Same as single battery
 
         % VOC vs SOC based on LiFePO₄ cell characteristics
         voc_cell = [2.5 3.0 3.15 3.25 3.3 3.35 3.6];       % single cell
@@ -225,7 +225,7 @@ assignin('base','parametersBus',parametersBus);
     v_ms  = v_kmh * 1000/3600;
 
     % Corresponding accel rates (m/s^2)
-    a_ms2 = [0.40, 0.25, 0.15];  
+    a_ms2 = [0.35, 0.25, 0.15];  
 
     % Preallocate time & speed arrays
     time = [];
@@ -338,7 +338,7 @@ assignin('base','parametersBus',parametersBus);
             assignin('base', 'ts_speed', ts_speed);
             assignin('base', 'grade', 0.02);
             assignin('base', 'friction_coeff', 0.004);
-            assignin('base', 'm_trail', 400);
+            assignin('base', 'm_trail', 1200);
 
             stopTime = time(end);
 
