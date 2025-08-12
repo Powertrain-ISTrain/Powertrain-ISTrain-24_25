@@ -1,0 +1,41 @@
+%% Comparação de eficiência de carregamento de supercapacitores
+clear; clc;
+
+% Resistências série estimadas (datasheets aproximados)
+ESR1 = 3 * 0.0029;  % 3 módulos em série
+ESR2 = 0.0022;      % 48V 83F
+ESR3 = 0.0011;      % 48V 165F
+
+% Capacitâncias
+C1 = 19.33;  % 3x16V 58F em série
+C2 = 83;     % 48V 83F
+C3 = 165;    % 48V 165F
+
+% Tensão inicial no supercap
+V0 = 0;
+
+% Intervalo de Vin [V]
+Vin_values = 40:0.5:48;
+
+% Função para calcular eficiência
+calc_eff = @(C, R, Vin) ...
+    arrayfun(@(V) ...
+        (0.5*C*(V*(1 - exp(-5*R*C)))^2) / ...
+        (integral(@(t) V*((V - V0)/R).*exp(-t/(R*C)), 0, 5*R*C)) ...
+        , Vin);
+
+% Calcular eficiências
+eff1 = calc_eff(C1, ESR1, Vin_values) * 100;
+eff2 = calc_eff(C2, ESR2, Vin_values) * 100;
+eff3 = calc_eff(C3, ESR3, Vin_values) * 100;
+
+% Plot
+figure;
+plot(Vin_values, eff1, 'b', 'LineWidth', 2); hold on;
+plot(Vin_values, eff2, 'Color', [1 0.5 0], 'LineWidth', 2);
+plot(Vin_values, eff3, 'Color', [0.5 0.5 0.5], 'LineWidth', 2);
+grid on;
+xlabel('Vin (V)');
+ylabel('Efficiency (%)');
+legend('16V Modules (19.33F)', '48V 83F', '48V 165F', 'Location', 'northwest');
+title('Charging Efficiency vs Input Voltage (t = 5\tau)');
