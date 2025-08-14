@@ -23,7 +23,7 @@ assignin('base','StepSize',StepSize);
 %% 0) User choices
 mt = 1;    % Motor choice
 bt=1;      % Battery choice
-dc = 1;    % Drive‑cycle choice
+dc = 2;    % Drive‑cycle choice
 
 
 %% 1) Motor parameters as Simulink.Parameter objects
