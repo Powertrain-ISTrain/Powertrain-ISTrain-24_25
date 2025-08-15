@@ -41,5 +41,5 @@ eta_mech = 0.85; %Average value (defined in [2])
 eta_elec = 0.90; %Average value (defined in [2])
 a=0.2 ; % Maximum Acceleration (prescribed value)
 %% RUN FILES
-Adhesion_verification
+% Adhesion_verification
 peak_motor_calc
