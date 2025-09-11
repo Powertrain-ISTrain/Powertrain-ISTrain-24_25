@@ -10,11 +10,11 @@ SF       = 30;           % [%] torque safety margin
 a_max_sys= 0.3;         % [m/s^2] max accel (your earlier constraint)
 
 v_max_test = 15/3.6;     % [m/s] test speed limit
-a_cmd_brk  = 0.4;        % [m/s^2] target decel during regen (Phase A)
+a_cmd_brk  = 0.3;        % [m/s^2] target decel during regen (Phase A)
 
 %% -------------------- Electrical limits & efficiencies (ISTrain) -------
 I_max      = 300;        % [A] system current limit
-I_chg_cmd  = 84;        % [A] commanded charge current (will be limited by ESR/I_max/adhesion)
+I_chg_cmd  = 100;        % [A] commanded charge current (will be limited by ESR/I_max/adhesion)
 I_dis_cmd  = 100;        % [A] commanded discharge current (limited likewise)
 
 Vbus       = 45.0;       % [V] DC bus / top clamp while charging
@@ -40,14 +40,14 @@ cap_name = '48V 165F';
 % Use the "optimal V0" headroom idea from your original code so one braking
 % event can store ~Erecov_event. If you prefer a fixed value, set V0 directly.
 use_optimal_V0 = true;
-Erecov_event   = 7.8e3;  % [J] target energy per braking event (adjust if needed)
+Erecov_event   = 20.9e3;  % [J] target energy per braking event (adjust if needed)
 
 if use_optimal_V0
     V0 = sqrt(max(Vbus^2 - (2*Erecov_event)/C, 0));
 else
     V0 = 0;
 end
-V0 = 44;      % safety clamp
+%V0 = 42;      % safety clamp
 
 %% -------------------- Timeline ---------------------------------------
 dt = 0.01;
